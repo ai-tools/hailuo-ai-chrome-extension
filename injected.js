@@ -2,6 +2,24 @@
 
 var ed1;
 
+
+function checkIfDivWithTextExists(textToCheck) {
+  const divs = document.querySelectorAll('div');
+  for (let i = 0; i < divs.length; i++) {
+    if (divs[i].innerText === textToCheck) {
+      return true; // Found a div with the specified inner text
+    }
+  }
+  return false; // No div found with the specified inner text
+}
+
+// Example usage:
+const searchText = 'Image-01';
+
+function IsImageMode(){
+  return checkIfDivWithTextExists(searchText)
+}
+
 window.setEditor = function () {
     console.log("Injected setEditor running");
   
@@ -141,8 +159,30 @@ window.setEditor = function () {
               return;
           }
           
+          const imageMode = IsImageMode();
   
-          if (!isGenerationCancellable()) {
+          if (imageMode){
+
+            if (!isGenerationCountMany() ) {
+              currentlyProcessing++;
+              console.error("Image Queue has place");
+              const prompt = queuedPrompts.shift();
+              genVideo(prompt, prompts.length - queuedPrompts.length);
+              console.log("genVideo img");
+              console.log(prompt);
+              setTimeout(() => {
+                  currentlyProcessing--;
+                  processNextPrompt();
+              }, 3000); // 12 second  delay between prompts
+              } else {
+                  console.log("Image Mode Queue Found wait 6 sec");
+                  setTimeout(processNextPrompt, 6000);
+              }
+
+          } 
+          else{ 
+
+            if (!isGenerationCancellable() ) {
               currentlyProcessing++;
               console.error("Queue Empty");
               const prompt = queuedPrompts.shift();
@@ -154,9 +194,10 @@ window.setEditor = function () {
                   processNextPrompt();
               }, 15000); // 12 second  delay between prompts
           } else {
-              console.log("Queue Found wait 5 sec");
+              console.log("Video Mode Queue Found wait 10 sec");
               setTimeout(processNextPrompt, 5000);
           }
+        }
       }
       console.error("Next Item");
       processNextPrompt();
@@ -240,7 +281,7 @@ window.setEditor = function () {
   
   async function genVideo(prompt, index) {
    
-      const main="Cinematic realastic greek european 7th century dark theme natural dark gloomy colors earthy environment real-looking 6th-century toga "
+      const main="Cinematic Hi-Res Green Screen Background for Virtual Production" 
       let el_textarea = findText();
       
       if (!el_textarea){
@@ -265,11 +306,20 @@ window.setEditor = function () {
   /////////////////
   
   
-  function isGenerationCancellable() {
+  function isGenerationCancellable22() 
+  {
 
     if (isGenerationCountMany()){
       return false;
     }
+   // return false; //todo remove
+      return Array.from(document.querySelectorAll('div'))
+          .some(div => div.innerHTML.trim().toLowerCase().includes("cancel generation"));
+  }
+
+  
+  function isGenerationCancellable() {
+
    // return false; //todo remove
       return Array.from(document.querySelectorAll('div'))
           .some(div => div.innerHTML.trim().toLowerCase().includes("cancel generation"));
